@@ -574,6 +574,17 @@ final class Fsck {
             orphans_fixed.getAndIncrement();
           }
           return false;
+        } catch (IllegalStateException ise) {
+          String message = ise.getMessage();
+          if (message.contains("already mapped to")) {
+            LOG.error(message);
+            // This is not entirely correct counting, as we don't know if it is this or the already mapped key
+            // that is the orphan. We need to look this up in the table. Then it is also possible to fix
+            // by removing the orphaned data.
+            orphans.getAndIncrement();
+          } else {
+            throw ise;
+          }
         }
 
         try {
