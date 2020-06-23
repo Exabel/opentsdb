@@ -95,7 +95,13 @@ public final class TSQuery {
   
   /** Whether or not to delete the queried data */
   private boolean delete = false;
-  
+
+  /** Whether or not to wait for the deletion to be completed. */
+  private boolean delete_sync = false;
+
+  /** How long to wait for deletion. */
+  private long delete_sync_timeout;
+
   /** A flag denoting whether or not to align intervals based on the calendar */
   private boolean use_calendar;
   
@@ -388,7 +394,17 @@ public final class TSQuery {
     return this.delete;
   }
   
-  /** @return the flag denoting whether intervals should be aligned based on 
+  /** @return Whether or not to wait for the deletion to be completed. @since 2.5 */
+  public boolean getDeleteSync() {
+    return this.delete_sync;
+  }
+
+  /** @return How long to wait for deletion. @since 2.5 */
+  public long getDeleteSyncTimeout() {
+    return this.delete_sync_timeout;
+  }
+
+  /** @return the flag denoting whether intervals should be aligned based on
    * the calendar
    * @since 2.3 */
   public boolean getUseCalendar() {
@@ -480,7 +496,17 @@ public final class TSQuery {
     this.delete = delete;
   }
   
-  /** @param use_calendar a flag denoting whether or not to align intervals 
+  /** @param delete_sync whether or not to wait for the deletion to be completed @since 2.5 */
+  public void setDeleteSync(boolean delete_sync) {
+    this.delete_sync = delete_sync;
+  }
+
+  /** @param delete_sync_timeout how long to wait for deletion @since 2.5 */
+  public void setDeleteSyncTimeout(long delete_sync_timeout) {
+    this.delete_sync_timeout = delete_sync_timeout;
+  }
+
+  /** @param use_calendar a flag denoting whether or not to align intervals
    * based on the calendar @since 2.3 */
   public void setUseCalendar(boolean use_calendar) {
     this.use_calendar = use_calendar;

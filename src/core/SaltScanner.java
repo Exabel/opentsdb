@@ -14,7 +14,6 @@ package net.opentsdb.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -125,20 +124,26 @@ public class SaltScanner {
   private final long max_data_points;
   private final long max_bytes;
   
-  /** A latch used to determine how many scanners are still running */
+  /** A latch used to determine how many scanners are still running. */
   private final CountDownLatch countdown;
   
   /** When the scanning started. We store the scan latency once all scanners
    * are done.*/
   private long start_time; // milliseconds.
 
-  /** Whether or not to delete the queried data */
+  /** Whether or not to delete the queried data. */
   private final boolean delete;
+
+  /** Whether or not to wait for the deletion to be completed. */
+  private final boolean delete_sync;
   
+  /** How long to wait for deletion. Defaults to 0 (forever). */
+  private final long delete_delete_timeout;
+
   /** A rollup query configuration if scanning for rolled up data. */
   private final RollupQuery rollup_query;
   
-  /** A list of filters to iterate over when processing rows */
+  /** A list of filters to iterate over when processing rows. */
   private final List<TagVFilter> filters;
   
   /** A holder for storing the first exception thrown by a scanner if something
@@ -147,7 +152,7 @@ public class SaltScanner {
   private volatile Exception exception;
   
   /**
-   * Default ctor that performs some validation. Call {@link scan} after 
+   * Default ctor that performs some validation. Call {@link #scan} after
    * construction to actually start fetching data.
    * @param tsdb The TSDB to which we belong
    * @param metric The metric we're expecting to fetch
@@ -161,40 +166,44 @@ public class SaltScanner {
                                       final List<Scanner> scanners, 
                                       final TreeMap<byte[], Span> spans,
                                       final List<TagVFilter> filters) {
-    this(tsdb, metric, scanners, spans, filters, false, null, null, 0, null, 0, 0);
+    this(tsdb, metric, scanners, spans, filters, false, null, null, 0, null, 0, 0, false, 0);
   }
   
   /**
-   * Default ctor that performs some validation. Call {@link scan} after 
+   * Default ctor that performs some validation. Call {@link #scan} after
    * construction to actually start fetching data.
    * @param tsdb The TSDB to which we belong
    * @param metric The metric we're expecting to fetch
    * @param scanners A list of HBase scanners, one for each bucket
    * @param spans The span map to store results in
+   * @param filters A list of filters for processing
    * @param delete Whether or not to delete the queried data
    * @param rollup_query An optional rollup query config. May be null.
-   * @param filters A list of filters for processing
    * @param query_stats A stats object for tracking timing
    * @param query_index The index of the sub query in the main query list
    * @param histogramSpans The histo map to populate.
-   * @param max_bytes The maximum number of bytes pulled out from all scanners 
+   * @param max_bytes The maximum number of bytes pulled out from all scanners
    * combined.
    * @param max_data_points The maximum number of data points pulled out from all
    * scanners (estimated).
+   * @param delete_sync
+   * @param delete_delete_timeout
    * @throws IllegalArgumentException if any required data was missing or
    * we had invalid parameters.
    */
-  public SaltScanner(final TSDB tsdb, final byte[] metric, 
-                                      final List<Scanner> scanners, 
-                                      final TreeMap<byte[], Span> spans,
-                                      final List<TagVFilter> filters,
-                                      final boolean delete,
-                                      final RollupQuery rollup_query,
-                                      final QueryStats query_stats,
-                                      final int query_index,
-                                      final TreeMap<byte[], HistogramSpan> histogramSpans,
-                                      final long max_bytes,
-                                      final long max_data_points) {
+  public SaltScanner(final TSDB tsdb, final byte[] metric,
+                     final List<Scanner> scanners,
+                     final TreeMap<byte[], Span> spans,
+                     final List<TagVFilter> filters,
+                     final boolean delete,
+                     final RollupQuery rollup_query,
+                     final QueryStats query_stats,
+                     final int query_index,
+                     final TreeMap<byte[], HistogramSpan> histogramSpans,
+                     final long max_bytes,
+                     final long max_data_points,
+                     boolean delete_sync,
+                     long delete_delete_timeout) {
     if (tsdb == null) {
       throw new IllegalArgumentException("The TSDB argument was null.");
     }
@@ -234,6 +243,8 @@ public class SaltScanner {
     this.tsdb = tsdb;
     this.filters = filters;
     this.delete = delete;
+    this.delete_sync = delete_sync;
+    this.delete_delete_timeout = delete_delete_timeout;
     this.rollup_query = rollup_query;
     this.query_stats = query_stats;
     this.query_index = query_index;
@@ -735,7 +746,16 @@ public class SaltScanner {
       ++rows_post_filter;
       if (delete) {
         final DeleteRequest del = new DeleteRequest(tsdb.dataTable(), key);
-        tsdb.getClient().delete(del);
+        Deferred<Object> deferredDelete = tsdb.getClient().delete(del);
+        if (delete_sync) {
+          try {
+            deferredDelete.join(delete_delete_timeout);
+          } catch (InterruptedException ie) {
+            LOG.info("Timeout waiting for delete");
+          } catch (Exception e) {
+            LOG.error("Error during delete", e);
+          }
+        }
       }
       
       List<HistogramDataPoint> hists = new ArrayList<HistogramDataPoint>();
