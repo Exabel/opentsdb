@@ -97,7 +97,7 @@ public interface Query {
 
   /**
    * How long to wait for deletion in case {@link #setDeleteSync} is set to true.
-   * Default to 0 (forever).
+   * Defaults to 0 (forever).
    * @param delete_sync_timeout number of milliseconds to wait for deletion.
    * @since 2.5
    */
