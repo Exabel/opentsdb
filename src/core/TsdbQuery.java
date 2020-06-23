@@ -849,14 +849,14 @@ final class TsdbQuery implements Query {
       scan_start_time = DateTime.nanoTime();
       return new SaltScanner(tsdb, metric, scanners, spans, scanner_filters,
           delete, rollup_query, query_stats, query_index, null, 
-          max_bytes, max_data_points, false, 0).scan();
+          max_bytes, max_data_points, delete_sync, delete_sync_timeout).scan();
     } else {
       final List<Scanner> scanners = new ArrayList<Scanner>(1);
       scanners.add(getScanner(0));
       scan_start_time = DateTime.nanoTime();
       return new SaltScanner(tsdb, metric, scanners, spans, scanner_filters,
           delete, rollup_query, query_stats, query_index, null, max_bytes, 
-          max_data_points, false, 0).scan();
+          max_data_points, delete_sync, delete_sync_timeout).scan();
     }
   }
   
@@ -915,13 +915,13 @@ final class TsdbQuery implements Query {
       scan_start_time = DateTime.nanoTime();
       return new SaltScanner(tsdb, metric, scanners, null, scanner_filters, 
           delete, rollup_query, query_stats, query_index, histSpans, 
-          max_bytes, max_data_points, false, 0).scanHistogram();
+          max_bytes, max_data_points, delete_sync, delete_sync_timeout).scanHistogram();
     } else {
       scanners = Lists.newArrayList(getScanner());
       scan_start_time = DateTime.nanoTime();
       return new SaltScanner(tsdb, metric, scanners, null, scanner_filters, 
           delete, rollup_query, query_stats, query_index, histSpans, 
-          max_bytes, max_data_points, false, 0).scanHistogram();
+          max_bytes, max_data_points, delete_sync, delete_sync_timeout).scanHistogram();
     }
   }
   
