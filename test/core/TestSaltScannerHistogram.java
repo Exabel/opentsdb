@@ -39,8 +39,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.google.common.collect.Maps;
-
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -198,7 +196,7 @@ public class TestSaltScannerHistogram extends BaseTsdbTest {
     PowerMockito.whenNew(SimpleHistogram.class).withAnyArguments().thenReturn(y1Hist);
 
     final SaltScanner scanner = new SaltScanner(tsdb, METRIC_BYTES, scanners, 
-        null, null, false, null, query_stats, 0, spans, 0, 0);
+        null, null, false, null, query_stats, 0, spans, 0, 0, false, 0);
     assertTrue(Maps.difference(spans, scanner.scanHistogram().joinUninterruptibly()).areEqual());
     assertEquals(3, spans.size());
 
@@ -230,7 +228,7 @@ public class TestSaltScannerHistogram extends BaseTsdbTest {
     PowerMockito.whenNew(SimpleHistogram.class).withAnyArguments().thenReturn(y1Hist);
 
     final SaltScanner scanner = new SaltScanner(tsdb, METRIC_BYTES, scanners, 
-        null, null, false, null, query_stats, 0, spans, 0, 0);
+        null, null, false, null, query_stats, 0, spans, 0, 0, false, 0);
 
     assertTrue(Maps.difference(spans, scanner.scanHistogram().joinUninterruptibly()).areEqual());
     assertEquals(3, spans.size());
@@ -265,7 +263,7 @@ public class TestSaltScannerHistogram extends BaseTsdbTest {
     PowerMockito.whenNew(SimpleHistogram.class).withAnyArguments().thenReturn(y1Hist);
 
     final SaltScanner scanner = new SaltScanner(tsdb, METRIC_BYTES, scanners, 
-        null, null, false, null, query_stats, 0, spans, 0, 0);
+        null, null, false, null, query_stats, 0, spans, 0, 0, false, 0);
 
     assertTrue(Maps.difference(spans, scanner.scanHistogram().joinUninterruptibly()).areEqual());
     assertEquals(3, spans.size());
@@ -299,7 +297,7 @@ public class TestSaltScannerHistogram extends BaseTsdbTest {
     PowerMockito.whenNew(SimpleHistogram.class).withAnyArguments().thenReturn(y1Hist);
 
     final SaltScanner scanner = new SaltScanner(tsdb, METRIC_BYTES, scanners, 
-        null, filters, false, null, query_stats, 0, spans, 0, 0);
+        null, filters, false, null, query_stats, 0, spans, 0, 0, false, 0);
 
     assertTrue(Maps.difference(spans, scanner.scanHistogram().joinUninterruptibly()).areEqual());
     assertEquals(0, spans.size());

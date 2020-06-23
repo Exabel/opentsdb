@@ -151,6 +151,16 @@ final class QueryRpc implements HttpRpc {
     if (query.getAPIMethod() == HttpMethod.DELETE &&
         tsdb.getConfig().getBoolean("tsd.http.query.allow_delete")) {
       data_query.setDelete(true);
+      data_query.setDeleteSync("true".equals(query.getQueryStringParam("delete_sync")));
+      String timeoutParam = query.getQueryStringParam("delete_sync_timeout");
+      try {
+        long timeout = Long.parseLong(timeoutParam);
+        if (timeout > 0) {
+          data_query.setDeleteSyncTimeout(timeout);
+        }
+      } catch (NumberFormatException e) {
+        // Ignore
+      }
     }
     
     // validate and then compile the queries
