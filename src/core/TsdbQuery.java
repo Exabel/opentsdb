@@ -102,6 +102,12 @@ final class TsdbQuery implements Query {
   /** Whether or not to delete the queried data */
   private boolean delete;
 
+  /** Whether or not to wait for the deletion to be completed. */
+  private boolean delete_sync;
+
+  /** How long to wait for deletion. Defaults to 0 (forever). */
+  private long delete_sync_timeout;
+
   /** ID of the metric being looked up. */
   private byte[] metric;
   
@@ -327,7 +333,29 @@ final class TsdbQuery implements Query {
   public boolean getDelete() {
     return delete;
   }
-  
+
+  @Override
+  public void setDeleteSync(boolean delete_sync) {
+    this.delete_sync = delete_sync;
+  }
+
+  @Override
+  public boolean getDeleteSync() {
+    return delete_sync;
+  }
+
+  @Override
+  public void setDeleteSyncTimeout(long delete_sync_timeout) {
+    if (delete_sync_timeout > 0) {
+      this.delete_sync_timeout = delete_sync_timeout;
+    }
+  }
+
+  @Override
+  public long getDeleteSyncTimeout() {
+    return delete_sync_timeout;
+  }
+
   @Override
   public void setPercentiles(List<Float> percentiles) {
     this.percentiles = percentiles;
@@ -444,6 +472,8 @@ final class TsdbQuery implements Query {
     setStartTime(query.startTime());
     setEndTime(query.endTime());
     setDelete(query.getDelete());
+    setDeleteSync(query.getDeleteSync());
+    setDeleteSyncTimeout(query.getDeleteSyncTimeout());
     query_index = index;
     query_stats = query.getQueryStats();
     
@@ -821,14 +851,14 @@ final class TsdbQuery implements Query {
       scan_start_time = DateTime.nanoTime();
       return new SaltScanner(tsdb, metric, scanners, spans, scanner_filters,
           delete, rollup_query, query_stats, query_index, null, 
-          max_bytes, max_data_points).scan();
+          max_bytes, max_data_points, delete_sync, delete_sync_timeout).scan();
     } else {
       final List<Scanner> scanners = new ArrayList<Scanner>(1);
       scanners.add(getScanner(0));
       scan_start_time = DateTime.nanoTime();
       return new SaltScanner(tsdb, metric, scanners, spans, scanner_filters,
           delete, rollup_query, query_stats, query_index, null, max_bytes, 
-          max_data_points).scan();
+          max_data_points, delete_sync, delete_sync_timeout).scan();
     }
   }
   
@@ -887,13 +917,13 @@ final class TsdbQuery implements Query {
       scan_start_time = DateTime.nanoTime();
       return new SaltScanner(tsdb, metric, scanners, null, scanner_filters, 
           delete, rollup_query, query_stats, query_index, histSpans, 
-          max_bytes, max_data_points).scanHistogram();
+          max_bytes, max_data_points, delete_sync, delete_sync_timeout).scanHistogram();
     } else {
       scanners = Lists.newArrayList(getScanner());
       scan_start_time = DateTime.nanoTime();
       return new SaltScanner(tsdb, metric, scanners, null, scanner_filters, 
           delete, rollup_query, query_stats, query_index, histSpans, 
-          max_bytes, max_data_points).scanHistogram();
+          max_bytes, max_data_points, delete_sync, delete_sync_timeout).scanHistogram();
     }
   }
   

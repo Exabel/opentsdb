@@ -521,7 +521,7 @@ public abstract class TagVFilter implements Comparable<TagVFilter> {
     return group_by;
   }
 
-  /** @param group_by Wether or not to group by the results of this filter */
+  /** @param group_by Whether or not to group by the results of this filter */
   public void setGroupBy(final boolean group_by) {
     this.group_by = group_by;
   }

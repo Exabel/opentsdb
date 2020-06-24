@@ -66,7 +66,7 @@ public interface Query {
    * @return A strictly positive integer.
    */
   long getEndTime();
-  
+
   /**
    * Sets whether or not the data queried will be deleted.
    * @param delete True if data should be deleted, false otherwise.
@@ -80,7 +80,36 @@ public interface Query {
    * @since 2.2
    */
   boolean getDelete();
-  
+
+  /**
+   * Sets whether or not to wait for deletion to be completed.
+   * @param delete_sync True to wait for deletion, false otherwise.
+   * @since 2.5
+   */
+  void setDeleteSync(boolean delete_sync);
+
+  /**
+   * Returns whether or not to wait for deletion.
+   * @return A boolean
+   * @since 2.5
+   */
+  boolean getDeleteSync();
+
+  /**
+   * How long to wait for deletion in case {@link #setDeleteSync} is set to true.
+   * Defaults to 0 (forever).
+   * @param delete_sync_timeout number of milliseconds to wait for deletion.
+   * @since 2.5
+   */
+  void setDeleteSyncTimeout(long delete_sync_timeout);
+
+  /**
+   * Returns how long to wait for deletion in case {@link #setDeleteSync} is set to true.
+   * @return number of milliseconds to wait for deletion.
+   * @since 2.5
+   */
+  long getDeleteSyncTimeout();
+
   /**
   * Sets the time series to the query.
   * @param metric The metric to retrieve from the TSDB.
@@ -157,8 +186,8 @@ public interface Query {
   /**
    * Prepares a query against HBase by setting up group bys and resolving
    * strings to UIDs asynchronously. This replaces calls to all of the setters
-   * like the {@link setTimeSeries}, {@link setStartTime}, etc. 
-   * Make sure to wait on the deferred return before calling {@link runAsync}. 
+   * like the {@link #setTimeSeries}, {@link #setStartTime}, etc.
+   * Make sure to wait on the deferred return before calling {@link #runAsync}.
    * @param query The main query to fetch the start and end time from
    * @param index The index of which sub query we're executing
    * @return A deferred to wait on for UID resolution. The result doesn't have
