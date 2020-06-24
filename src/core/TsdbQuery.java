@@ -105,7 +105,7 @@ final class TsdbQuery implements Query {
   /** Whether or not to wait for the deletion to be completed. */
   private boolean delete_sync;
 
-  /** How long to wait for deletion. Default to 0 (forever). */
+  /** How long to wait for deletion. Defaults to 0 (forever). */
   private long delete_sync_timeout;
 
   /** ID of the metric being looked up. */
@@ -346,7 +346,9 @@ final class TsdbQuery implements Query {
 
   @Override
   public void setDeleteSyncTimeout(long delete_sync_timeout) {
-    this.delete_sync_timeout = delete_sync_timeout;
+    if (delete_sync_timeout > 0) {
+      this.delete_sync_timeout = delete_sync_timeout;
+    }
   }
 
   @Override
