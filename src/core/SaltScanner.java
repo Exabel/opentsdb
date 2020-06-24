@@ -186,7 +186,7 @@ public class SaltScanner {
    * combined.
    * @param max_data_points The maximum number of data points pulled out from all
    * scanners (estimated).
-   * @param delete_sync Wether or not to wait for deletion
+   * @param delete_sync Whether or not to wait for deletion
    * @param delete_sync_timeout Milliseconds to wait for deletion. 0 means forever.
    * @throws IllegalArgumentException if any required data was missing or
    * we had invalid parameters.
