@@ -138,7 +138,7 @@ public class SaltScanner {
   private final boolean delete_sync;
   
   /** How long to wait for deletion. Defaults to 0 (forever). */
-  private final long delete_delete_timeout;
+  private final long delete_sync_timeout;
 
   /** A rollup query configuration if scanning for rolled up data. */
   private final RollupQuery rollup_query;
@@ -187,7 +187,7 @@ public class SaltScanner {
    * @param max_data_points The maximum number of data points pulled out from all
    * scanners (estimated).
    * @param delete_sync Wether or not to wait for deletion
-   * @param delete_delete_timeout Milliseconds to wait for deletion. 0 means forever.
+   * @param delete_sync_timeout Milliseconds to wait for deletion. 0 means forever.
    * @throws IllegalArgumentException if any required data was missing or
    * we had invalid parameters.
    */
@@ -203,7 +203,7 @@ public class SaltScanner {
                      final long max_bytes,
                      final long max_data_points,
                      boolean delete_sync,
-                     long delete_delete_timeout) {
+                     long delete_sync_timeout) {
     if (tsdb == null) {
       throw new IllegalArgumentException("The TSDB argument was null.");
     }
@@ -244,7 +244,7 @@ public class SaltScanner {
     this.filters = filters;
     this.delete = delete;
     this.delete_sync = delete_sync;
-    this.delete_delete_timeout = delete_delete_timeout;
+    this.delete_sync_timeout = delete_sync_timeout;
     this.rollup_query = rollup_query;
     this.query_stats = query_stats;
     this.query_index = query_index;
@@ -749,7 +749,7 @@ public class SaltScanner {
         Deferred<Object> deferredDelete = tsdb.getClient().delete(del);
         if (delete_sync) {
           try {
-            deferredDelete.join(delete_delete_timeout);
+            deferredDelete.join(delete_sync_timeout);
           } catch (InterruptedException ie) {
             LOG.info("Timeout waiting for delete");
           } catch (Exception e) {
