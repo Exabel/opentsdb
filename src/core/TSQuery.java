@@ -242,8 +242,8 @@ public final class TSQuery {
    * @since 2.2
    */
   public Deferred<Query[]> buildQueriesAsync(final TSDB tsdb) {
-    final List<Query> tsdb_queries_list = new ArrayList<>(queries.size());
-    final List<TSSubQuery> configuredQueries = new ArrayList<>(queries.size());
+    final List<Query> tsdb_queries_list = new ArrayList(queries.size());
+    final List<TSSubQuery> configuredQueries = new ArrayList(queries.size());
     
     final List<Deferred<Object>> deferreds =
         new ArrayList<Deferred<Object>>(queries.size());
@@ -259,7 +259,7 @@ public final class TSQuery {
         }
       }
     }
-    final Query[] tsdb_queries = tsdb_queries_list.toArray(new Query[0]);
+    final Query[] tsdb_queries = tsdb_queries_list.toArray(new Query[tsdb_queries_list.size()]);
     queries = configuredQueries;
     
     class GroupFinished implements Callback<Query[], ArrayList<Object>> {
