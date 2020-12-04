@@ -25,6 +25,7 @@ import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
 
 import net.opentsdb.stats.QueryStats;
+import net.opentsdb.uid.NoSuchUniqueName;
 import net.opentsdb.utils.DateTime;
 
 /**
@@ -241,15 +242,25 @@ public final class TSQuery {
    * @since 2.2
    */
   public Deferred<Query[]> buildQueriesAsync(final TSDB tsdb) {
-    final Query[] tsdb_queries = new Query[queries.size()];
+    final List<Query> tsdb_queries_list = new ArrayList<>(queries.size());
+    final List<TSSubQuery> configuredQueries = new ArrayList<>(queries.size());
     
     final List<Deferred<Object>> deferreds =
         new ArrayList<Deferred<Object>>(queries.size());
     for (int i = 0; i < queries.size(); i++) {
-      final Query query = tsdb.newQuery();
-      deferreds.add(query.configureFromQuery(this, i));
-      tsdb_queries[i] = query;
+      try {
+        final Query query = tsdb.newQuery();
+        deferreds.add(query.configureFromQuery(this, i));
+        tsdb_queries_list.add(query);
+        configuredQueries.add(queries.get(i));
+      } catch (NoSuchUniqueName e) {
+        if (!tsdb.config.getBoolean("tsd.query.ignore_unknown_name")) {
+          throw e;
+        }
+      }
     }
+    final Query[] tsdb_queries = tsdb_queries_list.toArray(new Query[0]);
+    queries = configuredQueries;
     
     class GroupFinished implements Callback<Query[], ArrayList<Object>> {
       @Override
