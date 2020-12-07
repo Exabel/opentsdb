@@ -606,10 +606,22 @@ final class TsdbQuery implements Query {
           return deferreds;
         }
       }
-      
+
+      /** Support ignore_unknown_name */
+      class ErrorCB implements Callback<Object, Exception> {
+        @Override
+        public Object call(Exception e) throws Exception {
+          if (e instanceof NoSuchUniqueName
+                  && tsdb.getConfig().getBoolean("tsd.query.ignore_unknown_name")) {
+            return Deferred.fromResult(null);
+          }
+          throw e;
+        }
+      }
+
       // fire off the callback chain by resolving the metric first
       return tsdb.metrics.getIdAsync(sub_query.getMetric())
-          .addCallbackDeferring(new MetricCB());
+          .addCallbackDeferring(new MetricCB()).addErrback(new ErrorCB());
     }
   }
   
