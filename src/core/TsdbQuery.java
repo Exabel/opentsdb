@@ -607,12 +607,12 @@ final class TsdbQuery implements Query {
         }
       }
 
-      /** Support ignore_unknown_name */
+      /** Support ignore_unknown_names */
       class ErrorCB implements Callback<Object, Exception> {
         @Override
         public Object call(Exception e) throws Exception {
           if (e instanceof NoSuchUniqueName
-                  && tsdb.getConfig().getBoolean("tsd.query.ignore_unknown_name")) {
+                  && tsdb.getConfig().getBoolean("tsd.query.ignore_unknown_names")) {
             return Deferred.fromResult(null);
           }
           throw e;
