@@ -783,7 +783,7 @@ final class TsdbQuery implements Query {
   @Override
   public Deferred<DataPoints[]> runAsync() throws HBaseException {
     if (metric == null) {
-      return Deferred.fromResult(new DataPoints[0]);
+      return Deferred.fromResult(NO_RESULT);
     }
 
     Deferred<DataPoints[]> result = null;
@@ -807,7 +807,7 @@ final class TsdbQuery implements Query {
     }
 
     if (metric == null) {
-      return Deferred.fromResult(new DataPoints[0]);
+      return Deferred.fromResult(NO_RESULT);
     }
 
     Deferred<DataPoints[]> result = null;
