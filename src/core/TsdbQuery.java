@@ -783,6 +783,7 @@ final class TsdbQuery implements Query {
   @Override
   public Deferred<DataPoints[]> runAsync() throws HBaseException {
     if (metric == null) {
+      // If ignore_unknown_names is true, metric may be null here. Ignore.
       return Deferred.fromResult(NO_RESULT);
     }
 
@@ -807,6 +808,7 @@ final class TsdbQuery implements Query {
     }
 
     if (metric == null) {
+      // If ignore_unknown_names is true, metric may be null here. Ignore.
       return Deferred.fromResult(NO_RESULT);
     }
 
