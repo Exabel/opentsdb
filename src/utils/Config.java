@@ -570,6 +570,7 @@ public class Config {
     default_map.put("tsd.query.multi_get.batch_size", "1024");
     default_map.put("tsd.query.multi_get.concurrent", "20");
     default_map.put("tsd.query.multi_get.get_all_salts", "false");
+    default_map.put("tsd.query.ignore_unknown_names", "false");
     default_map.put("tsd.rpc.telnet.return_errors", "true");
     // Rollup related settings
     default_map.put("tsd.rollups.enable", "false");

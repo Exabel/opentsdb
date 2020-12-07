@@ -606,10 +606,22 @@ final class TsdbQuery implements Query {
           return deferreds;
         }
       }
-      
+
+      /** Support ignore_unknown_names */
+      class ErrorCB implements Callback<Object, Exception> {
+        @Override
+        public Object call(Exception e) throws Exception {
+          if (e instanceof NoSuchUniqueName
+                  && tsdb.getConfig().getBoolean("tsd.query.ignore_unknown_names")) {
+            return Deferred.fromResult(null);
+          }
+          throw e;
+        }
+      }
+
       // fire off the callback chain by resolving the metric first
       return tsdb.metrics.getIdAsync(sub_query.getMetric())
-          .addCallbackDeferring(new MetricCB());
+          .addCallbackDeferring(new MetricCB()).addErrback(new ErrorCB());
     }
   }
   
@@ -770,6 +782,11 @@ final class TsdbQuery implements Query {
   
   @Override
   public Deferred<DataPoints[]> runAsync() throws HBaseException {
+    if (metric == null) {
+      // If ignore_unknown_names is true, metric may be null here. Ignore.
+      return Deferred.fromResult(NO_RESULT);
+    }
+
     Deferred<DataPoints[]> result = null;
     if (use_multi_gets && override_multi_get) {
       result = this.findSpansWithMultiGetter().addCallback(new GroupByAndAggregateCB());
@@ -789,7 +806,12 @@ final class TsdbQuery implements Query {
     if (!isHistogramQuery()) {
       throw new RuntimeException("Should never be here");
     }
-    
+
+    if (metric == null) {
+      // If ignore_unknown_names is true, metric may be null here. Ignore.
+      return Deferred.fromResult(NO_RESULT);
+    }
+
     Deferred<DataPoints[]> result = null;
     if (use_multi_gets && override_multi_get) {
       result = findHistogramSpansWithMultiGetter()
