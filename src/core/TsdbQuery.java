@@ -782,6 +782,10 @@ final class TsdbQuery implements Query {
   
   @Override
   public Deferred<DataPoints[]> runAsync() throws HBaseException {
+    if (metric == null) {
+      return Deferred.fromResult(new DataPoints[0]);
+    }
+
     Deferred<DataPoints[]> result = null;
     if (use_multi_gets && override_multi_get) {
       result = this.findSpansWithMultiGetter().addCallback(new GroupByAndAggregateCB());
@@ -801,7 +805,11 @@ final class TsdbQuery implements Query {
     if (!isHistogramQuery()) {
       throw new RuntimeException("Should never be here");
     }
-    
+
+    if (metric == null) {
+      return Deferred.fromResult(new DataPoints[0]);
+    }
+
     Deferred<DataPoints[]> result = null;
     if (use_multi_gets && override_multi_get) {
       result = findHistogramSpansWithMultiGetter()
